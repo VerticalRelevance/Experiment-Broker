@@ -1,37 +1,6 @@
 ## Experiment Broker
-Repository for Experiment Broker code
+This is the main module of Experiment Broker, containing the actions and probes that make up experiments.
 
-### Clone the Repo
-First, clone this repository:
-```shell
-git clone https://github.com/VerticalRelevance/Experiment-Broker.git
-```
-This repository holds the actions and probes used in the [Resiliency Testing Experiments](https://github.com/VerticalRelevance/resiliency-framework-experiments.git) repository. 
-
-### Installation
-Before installing the code dependencies, we recommend installing and preparing a virtual environment
-
-#### MacOS
-First, install pyenv and pyenv virtual-env to allow the creation of new environments. You must then configure your shell to use it. Note: this installation requires [Homebrew](https://brew.sh/) to be installed as well. If it is not, follow the instructions on the linked page to install.
-```sh
-brew install pyenv pyenv-virtualenv
-echo 'eval "$(pyenv init --path)"' >> ~/.zprofile
-echo 'eval "$(pyenv init -)"' >> ~/.zshrc
-eval "$(pyenv virtualenv-init -)"  >> ~/.zshrc
-```
-Then, you will need install the version of python which is used by the lambda. You can then create a virtual environment and name it as you please.
-
-```
-pyenv install 3.8.11
-pyenv virtualenv 3.8.11 <env_name>
-```
-
-Then, use the `requirements.txt` file to install the dependencies necessary for development.
-```
-cd experimentvr
-pip install -r requirements.txt
-```
-You are now set to begin creating actions and probes.
 ## Creating Actions and Probes
 
 Actions and probes are the way that an experiment is able to both induce failure in the environment and get information from the environment. 
@@ -45,8 +14,8 @@ type: action
     name: black_hole_network
     provider:
       type: python
-      module: experimentvr.ec2.actions
-      func: gpn_stress_all_network_io
+      module: activities.ec2.actions
+      func: stress_all_network_io
       arguments:
         test_target_type: 'RANDOM'
         tag_key: 'tag:Name'
@@ -54,9 +23,9 @@ type: action
         region: 'us-east-1'
         duration: '60'
 ```
-Under `module`, the experiment refers to `experimentvr.ec2.actions`. This tells us the corresponding action is referencing the `actions.py` file under the **chaosgpn/ec2/** directory, as discussed in the folder structure section above. That is where the code for all ec2 actions are written. 
+Under `module`, the experiment refers to `activities.ec2.actions`. This tells us the corresponding action is referencing the `actions.py` file under the **activities/ec2/** directory, as discussed in the folder structure section above. That is where the code for all ec2 actions are written. 
 <pre>
-experimentvr
+activities
  ┣ <b>ec2</b>
  ┃ ┣ __init__.py
  ┃ ┣ <b>actions.py</b>
@@ -81,7 +50,7 @@ Actions which require command line utilities such as `stress-ng` or `tc` will re
 
 The first step of the function is to identify the EC2 instance on which the test will run. This requires the use of a shared function, `get_test_instance_ids`. This is where we will use the arguments passed to the function. In order to use this function, you must make sure to import the function to the `actions.py` file.
 ```python
-from experimentvr.ec2.shared import gpn_get_test_instance_ids
+from activities.ec2.shared import get_test_instance_ids
 ```
 We can then call the function using the arguments passed into the function such as the `tag_key`, `tag_value`, and `test_target_type`. `tag_key` is a tag key such as "tag:Name", and `tag_value` refers to the value associated with that key. The `test_target_type` parameter determines if the function returns 1 random instance-id or all instance-ids associated with that tag. These parameters are passed from the experiment.
 ```python
@@ -118,7 +87,3 @@ return response
 ```
 
 We then return the response from boto3 as the result of the action. This concludes the body of the function. We have now written our first action to go along with an experiment! Please refer to [Resiliency Testing Experiments](https://github.com/VerticalRelevance/resiliency-framework-experiments.git) repository to learn about Experiment creation in YAML.
-
-## Deployment
-Deploy using the CI/CD pipeline of your choice. An example CDK and AWS CodePipeline-based build is included in another repo called  "Exeriment-Pipeline" 
-To start, simply issue `cdk deploy` in the `pipeline_infra` directory of this repository.

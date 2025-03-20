@@ -13,7 +13,6 @@ logging.basicConfig(level=logging.ERROR)
 
 
 def invoke_lambda(function, payload):
-
     session = boto3.Session()
     res_lambda = session.client("lambda")
 
@@ -26,13 +25,11 @@ def invoke_lambda(function, payload):
 
 
 def create_payload(bucket, experiment):
-
     payload = {"bucket_name": bucket, "experiment_source": experiment}
     return json.dumps(payload)
 
 
 def main():
-
     parser = argparse.ArgumentParser(
         description="Invoke Experiment Lambda with payload"
     )
